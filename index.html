@@ -272,15 +272,15 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc, updateDoc, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const fallbackConfig = {
-            apiKey: "AIzaSyC3e_zSH6xUtLPoSXdazNJ5cXZPT40wIrw",
-            authDomain: "mark1-7ce7e.firebaseapp.com",
-            databaseURL: "https://mark1-7ce7e-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "mark1-7ce7e",
-            storageBucket: "mark1-7ce7e.firebasestorage.app",
-            messagingSenderId: "147908886392",
-            appId: "1:147908886392:web:e9adf48a6b235c1b72128d"
-        };
+        const firebaseConfig = {
+  apiKey: "AIzaSyC3e_zSH6xUtLPoSXdazNJ5cXZPT40wIrw",
+  authDomain: "mark1-7ce7e.firebaseapp.com",
+  databaseURL: "https://mark1-7ce7e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "mark1-7ce7e",
+  storageBucket: "mark1-7ce7e.firebasestorage.app",
+  messagingSenderId: "147908886392",
+  appId: "1:147908886392:web:e9adf48a6b235c1b72128d"
+};
         
         // Environment handling for Vercel/GitHub
         const firebaseConfig = typeof window.__firebase_config !== 'undefined' ? JSON.parse(window.__firebase_config) : fallbackConfig;
