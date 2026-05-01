@@ -1,31 +1,20 @@
-# BIT Updates - Student Support Portal 🎓
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-An unofficial, web-based support portal for students to share problems, ask doubts, and create support tickets. This project serves as a web extension of the "BIT Updates" WhatsApp channel.
+# Run and deploy your AI Studio app
 
-## ✨ Features
+This contains everything you need to run your app locally.
 
-* **Google Authentication:** Secure and easy login using Google Sign-In.
-* **Guest Mode:** Anonymous login for students who want quick access without linking an account.
-* **Real-time Ticket Feed:** Submit and view academic, portal, or examination queries in real-time. Students can also delete their own tickets once resolved.
-* **WhatsApp Integration:** A custom pulsing quick-action button to message the support channel directly for urgent queries.
-* **Modern UI:** Fully optimized for both mobile and desktop using Tailwind CSS, themed around the familiar WhatsApp green color palette.
+View your app in AI Studio: https://ai.studio/apps/4e510968-50e3-4d28-b615-c0630a9d846f
 
-## 🛠️ Tech Stack
+## Run Locally
 
-* **Frontend:** HTML5, Tailwind CSS (via CDN), FontAwesome (Icons)
-* **Backend/BaaS:** Firebase (Authentication & Cloud Firestore)
+**Prerequisites:**  Node.js
 
-## 🚀 How to Deploy
 
-This project is a single-file static web application (`index.html`). It requires no build steps or package managers.
-
-1. Create a new repository on GitHub.
-2. Upload the `index.html` file to the root of the repository.
-3. Import the repository into your preferred hosting platform (like **Vercel**, **Netlify**, or **GitHub Pages**).
-4. Deploy!
-
-## ⚠️ Disclaimer
-
-This is an **unofficial** portal. It is meant to provide reminders, peer updates, and support only. This channel does not support any illegal activities or misuse. 
-
-If any critical problem occurs, please contact the exam coordinator or the official faculties/examination cell of BIT Wardha directly.
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
