@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIT Updates | Next-Gen Student Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #e2e8f0;
+        }
+        
+        .theme-gradient { 
+            background: transparent; 
+        }
+        
+        /* Modern Glassmorphism */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(30, 41, 59, 1);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .pulse-btn { animation: pulse-animation 2s infinite; }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(124, 58, 237, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+        }
+
+        .hidden-safely { display: none !important; }
+        
+        /* Custom Scrollbar styled for purple theme */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Input focus outline override for theme */
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- Global Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-[#020617] z-50 fixed inset-0">
+        <div class="glass-card p-8 rounded-2xl max-w-md w-full text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 theme-gradient"></div>
+            <div class="w-20 h-20 mx-auto bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-inner transform rotate-3">
+                <i class="fa-solid fa-ticket-simple text-4xl text-indigo-400 -rotate-3"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2 tracking-tight">BIT Updates</h1>
+            <p class="text-sm text-indigo-300/80 mb-8 font-medium">Next-Gen Support & Feedback Portal</p>
+            
+            <div class="space-y-4">
+                <button id="btn-google-signin" class="w-full flex items-center justify-center gap-3 bg-slate-900 border border-slate-700 text-slate-300 px-6 py-3.5 rounded-xl font-medium hover:bg-slate-800 hover:border-indigo-500 transition-all shadow-sm group">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5 group-hover:scale-110 transition-transform"> 
+                    <span>Sign in with Google</span>
+                </button>
+                <button id="btn-anon-signin" class="w-full flex items-center justify-center gap-3 bg-slate-800 text-indigo-300 px-6 py-3.5 rounded-xl font-medium hover:bg-slate-700 transition-all">
+                    <i class="fa-solid fa-user-secret"></i> 
+                    <span>Continue as Guest</span>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mt-8 leading-relaxed">Secure, responsive, and easy problem tracking for students and campus admins.</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="hidden-safely flex-1 flex flex-col">
+        
+        <!-- Navbar -->
+        <nav class="bg-slate-950/50 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 shadow-lg text-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg shadow-indigo-500/20 flex items-center justify-center text-white border border-slate-700">
+                        <i class="fa-solid fa-ticket-simple text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight tracking-wide">BIT Updates</h1>
+                        <p class="text-[10px] text-indigo-300 uppercase tracking-widest font-semibold font-mono">Support Space</p>
+                    </div>
+                </div>
+                <!-- Nav Actions -->
+                <div class="flex items-center gap-4">
+                    <div id="user-profile" class="hidden sm:flex flex-col items-end justify-center">
+                        <span id="user-name" class="text-sm font-semibold leading-tight text-white drop-shadow-sm">Student</span>
+                        <span id="admin-badge" class="hidden-safely text-[9px] bg-rose-500 text-white px-1.5 py-0.5 rounded uppercase font-bold tracking-widest mt-0.5 shadow-sm border border-rose-400">Admin</span>
+                    </div>
+                    <button id="btn-menu" class="text-white hover:text-indigo-300 transition p-2.5 rounded-xl hover:bg-slate-800 text-xl font-medium border border-transparent hover:border-slate-700" aria-label="Menu">
+                        <i class="fa-solid fa-user-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Profile / Settings Modal -->
+        <div id="profile-modal" class="hidden-safely fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden modal-enter flex flex-col max-h-[90vh] border border-slate-800">
+                <div class="bg-slate-800/50 p-5 flex justify-between items-center border-b border-slate-800">
+                    <h2 class="font-bold text-lg text-white"><i class="fa-solid fa-user-graduate mr-2 text-indigo-400"></i> Edit Profile</h2>
+                    <button id="btn-close-modal" class="text-slate-500 hover:text-white bg-slate-800 p-2 rounded-full shadow-sm hover:shadow transition-all border border-slate-700"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto">
+                    <form id="profile-form" class="flex flex-col gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-indigo-300/80 mb-1.5 uppercase tracking-wider">Full Name</label>
+                            <input type="text" id="prof-name" class="w-full bg-slate-900 border border-slate-700 text-sm text-slate-200 rounded-xl p-3 focus:bg-slate-800 transition-colors" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-indigo-300/80 mb-1.5 uppercase tracking-wider">PRN Number</label>
+                            <input type="text" id="prof-prn" placeholder="e.g. 24 COB 08" class="w-full bg-slate-900 border border-slate-700 text-sm text-slate-200 rounded-xl p-3 focus:bg-slate-800 transition-colors">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-indigo-300/80 mb-1.5 uppercase tracking-wider">Branch</label>
+                                <input type="text" id="prof-branch" placeholder="e.g. CSE" class="w-full bg-slate-900 border border-slate-700 text-sm text-slate-200 rounded-xl p-3 focus:bg-slate-800 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-indigo-300/80 mb-1.5 uppercase tracking-wider">Semester</label>
+                                <select id="prof-sem" class="w-full bg-slate-900 border border-slate-700 text-sm text-slate-200 rounded-xl p-3 focus:bg-slate-800 transition-colors">
+                                    <option value="">Select...</option>
+                                    <option value="I">Sem I</option><option value="II">Sem II</option>
+                                    <option value="III">Sem III</option><option value="IV">Sem IV</option>
+                                    <option value="V">Sem V</option><option value="VI">Sem VI</option>
+                                    <option value="VII">Sem VII</option><option value="VIII">Sem VIII</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-save-profile" class="mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl text-sm px-5 py-3 shadow-md shadow-indigo-500/20 transition-all flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk border-r border-slate-700 pr-2"></i> Save Profile Details
+                        </button>
+                        <button type="button" id="btn-logout-modal" class="mt-2 w-full text-rose-400 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 font-medium rounded-xl text-sm px-5 py-3 transition-colors">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i> Secure Sign Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard View -->
+        <main class="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 relative">
+            
+            <!-- Left Column: Form & Info -->
+            <div class="lg:col-span-1 lg:col-start-1 flex flex-col gap-6">
+                
+                <!-- Information Card -->
+                <div class="glass-card rounded-2xl p-5 border-l-4 border-indigo-500">
+                    <h2 class="text-indigo-400 font-bold flex items-center gap-2 mb-3 text-sm tracking-wide uppercase"><i class="fa-solid fa-bullhorn text-indigo-400"></i> Platform Notice</h2>
+                    <p class="text-xs text-slate-400 mb-2 leading-relaxed">This acts as a transparent support portal. Submit issues securely, track resolution state, and communicate directly with peer admins and coordinators.</p>
+                </div>
+
+                <!-- Ticket Raising Form -->
+                <div class="glass-card rounded-2xl p-6 relative">
+                    <h2 class="font-bold text-white mb-5 text-xl tracking-tight">Raise a Ticket</h2>
+                    <form id="ticket-form" class="flex flex-col gap-4">
+                        <select id="ticket-category" class="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-xl p-3 shadow-sm transition appearance-none" required>
+                            <option value="" disabled selected>Select category...</option>
+                            <option value="📝 General Notes">📝 General Notes</option>
+                            <option value="📄 Circular/Notice">📄 Circular/Notice</option>
+                            <option value="📚 Academic Query">📚 Academic Query</option>
+                            <option value="🧾 Exam & Results">🧾 Exam & Results</option>
+                            <option value="💻 Technical/Portal">💻 Technical/Portal</option>
+                            <option value="❓ Other Issue">❓ Other Issue</option>
+                        </select>
+                        <select id="ticket-priority" class="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-xl p-3 shadow-sm transition appearance-none" required>
+                            <option value="" disabled selected>Select priority...</option>
+                            <option value="Low">🟩 Low Priority</option>
+                            <option value="Medium">🟨 Medium Priority</option>
+                            <option value="High">🟥 High Priority</option>
+                        </select>
+                        <input type="text" id="ticket-title" placeholder="Brief Subject" class="w-full bg-slate-900 border border-slate-700 text-slate-200 font-medium text-sm rounded-xl p-3 shadow-sm transition" required>
+                        <textarea id="ticket-desc" rows="4" placeholder="Describe the issue you're facing. More details help us resolve it faster..." class="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-xl p-3 shadow-sm transition resize-none" required></textarea>
+                        
+                        <button type="submit" id="btn-submit-ticket" class="mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl text-sm px-5 py-3 shadow-lg shadow-indigo-500/20 flex justify-center items-center gap-2 transition-transform active:scale-[0.98]">
+                            <i class="fa-solid fa-rocket mr-1"></i> Submit Ticket
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Ticket Feed -->
+            <div class="lg:col-span-3 flex flex-col h-[85vh] min-h-[500px]">
+                <div class="glass-card rounded-2xl flex flex-col h-full overflow-hidden border border-slate-800 shadow-xl shadow-black/50">
+                    
+                    <!-- Feed Header with Filters -->
+                    <div class="p-5 border-b border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                <i class="fa-solid fa-layer-group text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-white text-lg tracking-tight">Support Desk</h2>
+                                <p class="text-xs text-slate-500 font-medium"><span id="ticket-count">0</span> matching tickets found</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700 w-full sm:w-auto">
+                            <button class="filter-btn flex-1 sm:flex-none text-xs font-semibold px-4 py-2 rounded-md transition-colors bg-slate-900 shadow-sm text-indigo-400 border border-slate-700" data-filter="all">All</button>
+                            <button class="filter-btn flex-1 sm:flex-none text-xs font-medium px-4 py-2 rounded-md transition-colors text-slate-400 hover:text-white" data-filter="open">Open</button>
+                            <button class="filter-btn flex-1 sm:flex-none text-xs font-medium px-4 py-2 rounded-md transition-colors text-slate-400 hover:text-white" data-filter="closed">Closed</button>
+                            <button class="filter-btn flex-1 sm:flex-none text-xs font-medium px-4 py-2 rounded-md transition-colors text-slate-400 hover:text-white" data-filter="mine">Mine</button>
+                            <button id="btn-dashboard" class="filter-btn flex-1 sm:flex-none text-xs font-medium px-4 py-2 rounded-md transition-colors text-slate-400 hover:text-white" data-filter="dashboard">Dashboard</button>
+                            <button id="btn-admin-panel" class="hidden-safely filter-btn flex-1 sm:flex-none text-xs font-medium px-4 py-2 rounded-md transition-colors text-slate-400 hover:text-white" data-filter="admin-panel">Admin</button>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Area -->
+                    <div id="dashboard-view" class="hidden-safely flex-1 overflow-y-auto p-6 bg-slate-900/10">
+                        <div id="dashboard-metrics" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Metrics will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Admin Area -->
+                    <div id="admin-view" class="hidden-safely flex-1 overflow-y-auto p-6 bg-slate-900/10">
+                        <h2 class="text-white font-bold text-lg mb-4">Admin Control Center</h2>
+                        <div id="admin-controls" class="space-y-4">
+                            <!-- Admin controls injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Tickets Area -->
+                    <div id="tickets-feed" class="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-5 bg-slate-900/10">
+                        <div id="loading-feed" class="text-center py-20 text-indigo-400">
+                            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
+                            <p class="font-medium">Connecting to secure database...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Action Button for Emergency Contact (Whatsapp) -->
+    <a href="https://wa.me/919970182686?text=Hi%20BIT%20Updates,%20I%20have%20an%20urgent%20student%20query." target="_blank" rel="noopener noreferrer" class="fixed bottom-6 right-6 z-40 flex items-center group" aria-label="Contact via WhatsApp">
+        <div class="bg-indigo-600 text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-xl shadow-indigo-600/40 hover:bg-indigo-700 transition-colors pulse-btn">
+            <i class="fa-brands fa-whatsapp"></i>
+        </div>
+    </a>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc, updateDoc, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const fallbackConfig = {
+            apiKey: "AIzaSyC3e_zSH6xUtLPoSXdazNJ5cXZPT40wIrw",
+            authDomain: "mark1-7ce7e.firebaseapp.com",
+            databaseURL: "https://mark1-7ce7e-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "mark1-7ce7e",
+            storageBucket: "mark1-7ce7e.firebasestorage.app",
+            messagingSenderId: "147908886392",
+            appId: "1:147908886392:web:e9adf48a6b235c1b72128d"
+        };
+        
+        // Environment handling for Vercel/GitHub
+        const firebaseConfig = typeof window.__firebase_config !== 'undefined' ? JSON.parse(window.__firebase_config) : fallbackConfig;
+        
+        let appConfigured = false;
+        let app, auth, db;
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            appConfigured = true;
+        } catch(e) {
+            console.error("Firebase Init Error:", e);
+            showToast("Database configuration error. Please check environment variables.", "error");
+        }
+        
+        const appId = 'bit-updates-mark2'; // Upgraded namespace
+        
+        // Admin Roles Verification
+        const ADMIN_EMAILS = ["class11art@gmail.com", "co.2024.prdeshkar@bitwardha.ac.in"];
+
+        let currentUser = null;
+        let userDataCache = {}; 
+        let unsubscribeFeed = null;
+        let isAdminFlag = false;
+        
+        let allTickets = [];
+        let currentFilter = 'all';
+        let editTicketId = null;
+
+        // DOM Elements
+        const elMainApp = document.getElementById('main-app');
+        const elLoginScreen = document.getElementById('login-screen');
+        const elTicketsFeed = document.getElementById('tickets-feed');
+        const elModal = document.getElementById('profile-modal');
+
+        // Robust Toast System
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const isErr = type === 'error';
+            const bgColor = isErr ? 'bg-rose-500/90' : 'bg-slate-800';
+            const icon = isErr ? 'fa-circle-exclamation' : 'fa-check-circle';
+            
+            toast.className = `flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl text-slate-200 pointer-events-auto transform transition-all duration-400 translate-y-10 opacity-0 ${bgColor} border border-slate-700`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg shadow-sm"></i><p class="text-sm font-medium tracking-wide">${message}</p>`;
+            container.appendChild(toast);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            });
+            
+            setTimeout(() => { 
+                toast.classList.add('translate-y-10', 'opacity-0'); 
+                setTimeout(() => toast.remove(), 400); 
+            }, 4000);
+        };
+
+        if(!appConfigured) {
+            document.getElementById('loading-feed').innerHTML = '<p class="text-rose-500">System architecture unavailable. Check configuration.</p>';
+        }
+
+        // ==========================================
+        // Authentication & User State Management
+        // ==========================================
+        
+        document.getElementById('btn-google-signin').onclick = async function() {
+            try { 
+                this.classList.add('opacity-80', 'pointer-events-none'); 
+                this.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-lg"></i> <span>Authenticating...</span>'; 
+                await signInWithPopup(auth, new GoogleAuthProvider()); 
+            } 
+            catch (e) { 
+                showToast(e.message, "error"); 
+                this.classList.remove('opacity-80', 'pointer-events-none'); 
+                this.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> <span>Sign in with Google</span>'; 
+            }
+        };
+
+        document.getElementById('btn-anon-signin').onclick = async function() {
+            try { 
+                this.classList.add('opacity-80', 'pointer-events-none'); 
+                this.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-lg"></i> <span>Connecting...</span>'; 
+                await signInAnonymously(auth); 
+            } 
+            catch (e) { 
+                showToast("Guest architecture failed to load.", "error"); 
+                this.classList.remove('opacity-80', 'pointer-events-none'); 
+                this.innerHTML = '<i class="fa-solid fa-user-secret"></i> <span>Continue as Guest</span>'; 
+            }
+        };
+
+        document.getElementById('btn-logout-modal').onclick = () => signOut(auth);
+
+        async function fetchUserData(uid) {
+            try {
+                const docSnap = await getDoc(doc(db, 'users', uid));
+                if (docSnap.exists()) {
+                    userDataCache = docSnap.data();
+                    document.getElementById('user-name').innerText = userDataCache.displayName || currentUser.displayName || 'Guest User';
+                } else {
+                    userDataCache = {};
+                }
+            } catch(e) { 
+                console.warn("User data cache sync failed. Proceeding with defaults."); 
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                elLoginScreen.classList.add('hidden-safely');
+                elMainApp.classList.remove('hidden-safely');
+                
+                // RBAC Verification
+                const userEmail = user.email ? user.email.toLowerCase().trim() : '';
+                isAdminFlag = ADMIN_EMAILS.includes(userEmail);
+                
+                if (isAdminFlag) {
+                    document.getElementById('admin-badge').classList.remove('hidden-safely');
+                    document.getElementById('btn-admin-panel').classList.remove('hidden-safely');
+                    showToast("System Administrator Access Granted.");
+                } else {
+                    document.getElementById('admin-badge').classList.add('hidden-safely');
+                    document.getElementById('btn-admin-panel').classList.add('hidden-safely');
+                    showToast(`Welcome back, ${user.displayName || 'Student'}!`);
+                }
+
+                document.getElementById('user-name').innerText = user.displayName || 'Guest User';
+                await fetchUserData(user.uid);
+                startTicketListener();
+            } else {
+                elLoginScreen.classList.remove('hidden-safely');
+                elMainApp.classList.add('hidden-safely');
+                elModal.classList.add('hidden-safely');
+                document.getElementById('admin-badge').classList.add('hidden-safely');
+                
+                if (unsubscribeFeed) {
+                    unsubscribeFeed();
+                    unsubscribeFeed = null;
+                }
+                
+                // Reset Login Buttons
+                const btnGL = document.getElementById('btn-google-signin');
+                btnGL.classList.remove('opacity-80', 'pointer-events-none');
+                btnGL.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5 group-hover:scale-110 transition-transform"> <span>Sign in with Google</span>';
+                
+                const btnAn = document.getElementById('btn-anon-signin');
+                btnAn.classList.remove('opacity-80', 'pointer-events-none');
+                btnAn.innerHTML = '<i class="fa-solid fa-user-secret"></i> <span>Continue as Guest</span>';
+            }
+        });
+
+        // ==========================================
+        // Profile Editing Features
+        // ==========================================
+        
+        document.getElementById('btn-menu').onclick = () => {
+            elModal.classList.remove('hidden-safely');
+            document.getElementById('prof-name').value = userDataCache.displayName || (currentUser ? currentUser.displayName : '') || '';
+            document.getElementById('prof-prn').value = userDataCache.prn || '';
+            document.getElementById('prof-branch').value = userDataCache.branch || '';
+            document.getElementById('prof-sem').value = userDataCache.semester || '';
+        };
+
+        document.getElementById('btn-close-modal').onclick = () => elModal.classList.add('hidden-safely');
+
+        document.getElementById('profile-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-profile');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Syncing...';
+            btn.disabled = true;
+
+            const updatedData = {
+                uid: currentUser.uid,
+                displayName: document.getElementById('prof-name').value.trim(),
+                prn: document.getElementById('prof-prn').value.trim().toUpperCase(),
+                branch: document.getElementById('prof-branch').value.trim().toUpperCase(),
+                semester: document.getElementById('prof-sem').value,
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                await setDoc(doc(db, 'users', currentUser.uid), updatedData, { merge: true });
+                userDataCache = { ...userDataCache, ...updatedData };
+                document.getElementById('user-name').innerText = updatedData.displayName;
+                showToast("Profile credentials synchronized globally.");
+                elModal.classList.add('hidden-safely');
+            } catch (error) {
+                console.error("Profile Update Error:", error);
+                showToast("Permission denied. Could not update profile metrics.", "error");
+            }
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        };
+
+        // ==========================================
+        // UI Helpers & Formatting
+        // ==========================================
+        
+        function escapeHTML(str) {
+            if(!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
+        }
+
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return 'Just now';
+            const seconds = Math.floor((new Date() - timestamp.toDate()) / 1000);
+            const intervals = { year: 31536000, month: 2592000, day: 86400, hr: 3600, min: 60 };
+            
+            for (let [unit, sec] of Object.entries(intervals)) {
+                let count = Math.floor(seconds / sec);
+                if (count >= 1) return `${count} ${unit}${count > 1 ? 's' : ''} ago`;
+            }
+            return "Just now";
+        }
+
+        function getCategoryColor(category) {
+            if(category.includes('Notes') || category.includes('Syllabus')) return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
+            if(category.includes('Exam') || category.includes('Result')) return 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+            if(category.includes('Technical') || category.includes('Portal')) return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+            return 'bg-slate-800/50 text-slate-300 border-slate-700';
+        }
+
+        function getPriorityColor(priority) {
+            if(priority === 'High') return 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+            if(priority === 'Medium') return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+            if(priority === 'Low') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+            return 'bg-slate-800/50 text-slate-300 border-slate-700';
+        }
+
+        function getStatusColor(status) {
+            if(status === 'closed' || status === 'resolved') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+            return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+        }
+
+        // ==========================================
+        // Ticket Processing Engine
+        // ==========================================
+        
+        // Filtering
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Update UI state
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-slate-900', 'shadow-sm', 'text-indigo-400', 'border', 'border-slate-700');
+                    b.classList.add('text-slate-400');
+                });
+                e.target.classList.add('bg-slate-900', 'shadow-sm', 'text-indigo-400', 'border', 'border-slate-700');
+                e.target.classList.remove('text-slate-400');
+                
+                currentFilter = e.target.getAttribute('data-filter');
+                renderTicketsUI();
+            });
+        });
+
+        function startTicketListener() {
+            unsubscribeFeed = onSnapshot(collection(db, 'artifacts', appId, 'public', 'routes', 'support_tickets'), (snapshot) => {
+                allTickets = [];
+                snapshot.forEach(doc => allTickets.push({ id: doc.id, ...doc.data() }));
+                
+                // Deep sorting by timestamp
+                allTickets.sort((a, b) => {
+                    let t1 = a.createdAt?.toMillis() || Date.now();
+                    let t2 = b.createdAt?.toMillis() || Date.now();
+                    return t2 - t1;
+                });
+                
+                renderTicketsUI();
+            }, (error) => {
+                console.error("Firestore Listen Error:", error);
+                showToast("Connection to the central dispatch node failed.", "error");
+            });
+        }
+
+        function renderTicketsUI() {
+            document.getElementById('loading-feed')?.classList.add('hidden-safely');
+            
+            const feed = document.getElementById('tickets-feed');
+            const dashboard = document.getElementById('dashboard-view');
+            const admin = document.getElementById('admin-view');
+            
+            feed.classList.add('hidden-safely');
+            dashboard.classList.add('hidden-safely');
+            admin.classList.add('hidden-safely');
+            
+            if (currentFilter === 'dashboard') {
+                dashboard.classList.remove('hidden-safely');
+                renderAdminDashboard();
+                return;
+            } else if (currentFilter === 'admin-panel') {
+                admin.classList.remove('hidden-safely');
+                renderAdminView();
+                return;
+            } else {
+                feed.classList.remove('hidden-safely');
+            }
+
+            elTicketsFeed.innerHTML = '';
+            
+            let displayTickets = allTickets;
+            if (currentFilter === 'open') {
+                displayTickets = allTickets.filter(t => t.status === 'open' || !t.status);
+            } else if (currentFilter === 'closed') {
+                displayTickets = allTickets.filter(t => t.status === 'closed');
+            } else if (currentFilter === 'mine') {
+                displayTickets = allTickets.filter(t => t.authorId === currentUser.uid);
+            }
+
+            document.getElementById('ticket-count').innerText = displayTickets.length;
+
+            if (displayTickets.length === 0) {
+                elTicketsFeed.innerHTML = `
+                    <div class="m-auto text-center p-8 bg-slate-900/60 border border-slate-800 rounded-2xl shadow-sm max-w-sm">
+                        <div class="w-16 h-16 mx-auto bg-slate-800 text-indigo-400 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-box-open text-2xl"></i>
+                        </div>
+                        <h3 class="text-white font-bold mb-1">Queue is Empty</h3>
+                        <p class="text-sm text-slate-500">No support tickets tracking in this view right now.</p>
+                    </div>`;
+                return;
+            }
+
+            displayTickets.forEach(ticket => {
+                const isMine = currentUser.uid === ticket.authorId;
+                const status = ticket.status || 'open';
+                const badgeColor = getCategoryColor(ticket.category);
+                const statColor = getStatusColor(status);
+                const priorityColor = ticket.priority ? getPriorityColor(ticket.priority) : '';
+                const priorityBadge = ticket.priority ? `<span class="text-[10px] font-semibold ${priorityColor} border px-2 py-0.5 rounded-md flex items-center gap-1"><i class="fa-solid fa-flag text-[9px]"></i> ${escapeHTML(ticket.priority)} Priority</span>` : '';
+                
+                const assignedText = ticket.assignedTo ? `<span class="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-2 py-1 rounded ml-2 font-medium flex items-center gap-1"><i class="fa-solid fa-user-check text-indigo-400"></i> Assigned: ${escapeHTML(ticket.assignedTo)}</span>` : '';
+
+                let postedByText = escapeHTML(ticket.authorName);
+                if(ticket.authorPRN) postedByText += ` <span class="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-1.5 py-0.5 rounded ml-1 font-mono">${escapeHTML(ticket.authorPRN)}</span>`;
+
+                const avatarHTML = ticket.authorPhoto 
+                    ? `<img src="${escapeHTML(ticket.authorPhoto)}" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 object-cover shadow-sm">`
+                    : `<div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">${escapeHTML((ticket.authorName || 'S').charAt(0).toUpperCase())}</div>`;
+
+                // Interactive Admin Actions UI
+                let adminActionsUI = '';
+                let adminInputUI = '';
+                
+                if (isAdminFlag) {
+                    const statusToggleText = status === 'open' ? 'Mark Resolved' : 'Re-open Ticket';
+                    const statusToggleIcon = status === 'open' ? 'fa-check' : 'fa-rotate-left';
+                    const newStatus = status === 'open' ? 'closed' : 'open';
+
+                    adminActionsUI = `
+                        <div class="flex gap-2 isolate">
+                            <button onclick="updateTicketStatus('${ticket.id}', '${newStatus}')" class="text-[10px] bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-400 hover:text-indigo-400 px-2 py-1 rounded transition flex items-center gap-1 shadow-sm font-semibold">
+                                <i class="fa-solid ${statusToggleIcon}"></i> ${statusToggleText}
+                            </button>
+                            <button onclick="assignTicket('${ticket.id}')" class="text-[10px] bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-400 hover:text-indigo-400 px-2 py-1 rounded transition flex items-center gap-1 shadow-sm font-semibold" title="Assign Ticket">
+                                <i class="fa-solid fa-user-plus"></i> Assign
+                            </button>
+                            <button onclick="deleteTicket('${ticket.id}')" class="text-[10px] bg-slate-900 border border-rose-500/30 hover:bg-rose-500/20 text-rose-400 px-2 py-1 rounded transition shadow-sm" title="Delete record permanently">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+
+                    adminInputUI = `
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex gap-2 items-center bg-slate-900/50 -mx-5 -mb-5 p-4 rounded-b-2xl">
+                        <div class="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow-sm"><i class="fa-solid fa-shield-halved"></i></div>
+                        <input type="text" id="reply-input-${ticket.id}" placeholder="Dispatch official update..." class="flex-1 bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm transition">
+                        <button onclick="adminReply('${ticket.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2 rounded-lg transition shadow-md shadow-indigo-500/20 font-semibold tracking-wide">Update</button>
+                    </div>`;
+                } else if (isMine) {
+                    adminActionsUI = `
+                        <div class="flex gap-2 isolate">
+                            <button onclick="editTicket('${ticket.id}')" class="text-[10px] bg-slate-800/50 border border-slate-700 hover:border-amber-500/50 text-slate-400 hover:text-amber-400 p-1.5 rounded transition shadow-sm">
+                                <i class="fa-solid fa-pen"></i> Edit
+                            </button>
+                            <button onclick="deleteTicket('${ticket.id}')" class="text-[10px] bg-slate-800/50 border border-slate-700 hover:border-rose-500/50 text-slate-400 hover:text-rose-400 p-1.5 rounded transition shadow-sm">
+                                <i class="fa-solid fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Allow comment input for the owner
+                    adminInputUI = `
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex gap-2 items-center bg-slate-900/50 -mx-5 -mb-5 p-4 rounded-b-2xl">
+                        <div class="w-6 h-6 rounded bg-slate-700 text-white flex items-center justify-center text-[10px] shadow-sm"><i class="fa-regular fa-comment"></i></div>
+                        <input type="text" id="comment-input-${ticket.id}" placeholder="Add a comment or follow-up..." class="flex-1 bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm transition">
+                        <button onclick="addComment('${ticket.id}')" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-4 py-2 rounded-lg transition shadow-md font-semibold tracking-wide">Comment</button>
+                    </div>`;
+                }
+
+                // Official Reply Rendering and general comments
+                let replyDisplayUI = '';
+                if (ticket.adminReply) {
+                    replyDisplayUI += `
+                    <div class="mt-4 bg-gradient-to-r from-indigo-900/40 to-slate-900 border border-slate-800 p-4 rounded-xl relative shadow-sm">
+                        <div class="absolute left-0 top-0 w-1.5 h-full bg-indigo-500 rounded-l-xl"></div>
+                        <div class="flex items-center justify-between mb-2 ml-1">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-shield-check text-indigo-400 text-sm"></i>
+                                <span class="text-[10px] font-extrabold text-indigo-300 uppercase tracking-widest">Admin Dispatch</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-200 leading-relaxed ml-1 font-medium whitespace-pre-wrap">${escapeHTML(ticket.adminReply)}</p>
+                    </div>`;
+                }
+                
+                if (ticket.comments && ticket.comments.length > 0) {
+                    ticket.comments.forEach(comment => {
+                        replyDisplayUI += `
+                        <div class="mt-3 bg-slate-800/80 border border-slate-700 p-3 rounded-xl shadow-sm">
+                            <div class="flex justify-between items-start mb-1.5">
+                                <div class="text-[10px] font-semibold text-slate-300 flex items-center gap-1.5"><i class="fa-regular fa-comment-dots text-slate-500"></i> ${escapeHTML(comment.authorName)}</div>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">${escapeHTML(comment.text)}</p>
+                        </div>`;
+                    });
+                }
+
+                const cardHTML = `
+                    <div class="bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-800 hover:border-indigo-500 transition-colors group relative ${status === 'closed' ? 'opacity-80' : ''}">
+                        
+                        <div class="flex gap-4 mb-3">
+                            ${avatarHTML}
+                            <div class="flex-1 min-w-0 flex flex-col justify-center">
+                                <div class="flex justify-between items-start gap-4">
+                                    <h3 class="font-bold text-white text-base leading-tight truncate" title="${escapeHTML(ticket.title)}">${escapeHTML(ticket.title)}</h3>
+                                    <div class="shrink-0 flex items-center gap-2">
+                                        <span class="text-[9px] font-bold ${statColor} border px-2 py-0.5 rounded-full uppercase tracking-wider">${status.toUpperCase()}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                    <span class="text-[10px] font-semibold ${badgeColor} border px-2 py-0.5 rounded-md">${escapeHTML(ticket.category)}</span>
+                                    ${priorityBadge}
+                                    ${assignedText}
+                                    <span class="text-[10px] text-slate-500 font-medium tracking-wide border-l border-slate-800 pl-2"><i class="fa-regular fa-clock"></i> ${formatTimeAgo(ticket.createdAt)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm text-slate-400 bg-slate-800/50 p-3.5 rounded-xl border border-slate-800 leading-relaxed whitespace-pre-wrap mt-2">${escapeHTML(ticket.description)}</p>
+                        
+                        ${replyDisplayUI}
+                        
+                        <div class="mt-4 flex justify-between items-end border-t border-slate-800 pt-3">
+                            <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
+                                <i class="fa-solid fa-satellite-dish text-slate-600"></i> Logged by <span class="font-semibold text-slate-300">${postedByText}</span>
+                                ${isMine ? '<span class="text-indigo-400 font-bold bg-slate-800 border border-slate-800 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider ml-1">You</span>' : ''}
+                            </div>
+                            ${adminActionsUI}
+                        </div>
+                        
+                        ${adminInputUI}
+                    </div>
+                `;
+                elTicketsFeed.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        window.renderAdminDashboard = function() {
+            if (!isAdminFlag) return;
+            const container = document.getElementById('dashboard-metrics');
+            
+            const openTickets = allTickets.filter(t => t.status !== 'closed').length;
+            const closedTickets = allTickets.filter(t => t.status === 'closed').length;
+            
+            const categoryCounts = allTickets.reduce((acc, t) => {
+                acc[t.category] = (acc[t.category] || 0) + 1;
+                return acc;
+            }, {});
+            
+            // Calculate Avg Res Time (simplified)
+            let totalResTime = 0;
+            let resolvedCount = 0;
+            allTickets.forEach(t => {
+                if (t.status === 'closed' && t.createdAt && t.repliedAt) {
+                    totalResTime += (t.repliedAt.toMillis() - t.createdAt.toMillis());
+                    resolvedCount++;
+                }
+            });
+            const avgResTime = resolvedCount > 0 ? (totalResTime / resolvedCount / (1000 * 60 * 60)).toFixed(1) : 0;
+            
+            container.innerHTML = `
+                <div class="glass-card p-5 rounded-2xl">
+                    <div class="text-xs text-indigo-300 font-bold uppercase tracking-widest mb-1">Open Tickets</div>
+                    <div class="text-3xl font-bold text-white">${openTickets}</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl">
+                    <div class="text-xs text-indigo-300 font-bold uppercase tracking-widest mb-1">Resolved</div>
+                    <div class="text-3xl font-bold text-white">${closedTickets}</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl">
+                    <div class="text-xs text-indigo-300 font-bold uppercase tracking-widest mb-1">Avg Resolution (hrs)</div>
+                    <div class="text-3xl font-bold text-white">${avgResTime}</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl sm:col-span-2 lg:col-span-1">
+                    <div class="text-xs text-indigo-300 font-bold uppercase tracking-widest mb-1">Top Category</div>
+                    <div class="text-lg font-bold text-white truncate">${Object.keys(categoryCounts).sort((a,b) => categoryCounts[b] - categoryCounts[a])[0] || 'N/A'}</div>
+                </div>
+            `;
+        };
+
+        window.renderAdminView = function() {
+            if (!isAdminFlag) return;
+            const container = document.getElementById('admin-controls');
+            container.innerHTML = `
+                <div class="glass-card p-5 rounded-2xl">
+                    <h3 class="text-white font-bold mb-4">Ticket Directory</h3>
+                    <div class="space-y-2">
+                        ${allTickets.map(t => `
+                            <div class="flex justify-between items-center p-3 bg-slate-950 rounded-lg border border-slate-700">
+                                <span class="text-sm text-slate-300 truncate">${escapeHTML(t.title)}</span>
+                                <div class="flex gap-2">
+                                    <button onclick="deleteTicket('${t.id}')" class="text-rose-400 p-2"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        };
+
+        // ==========================================
+        // Event Handlers & Writes (Secured)
+        // ==========================================
+
+        document.getElementById('ticket-form').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!currentUser) return showToast("Unauthorized operation. Session expired.", "error");
+            
+            const btn = document.getElementById('btn-submit-ticket');
+            const originalHTML = btn.innerHTML;
+            
+            try {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...'; 
+                btn.disabled = true;
+                
+                const payload = {
+                    category: document.getElementById('ticket-category').value,
+                    priority: document.getElementById('ticket-priority').value,
+                    title: document.getElementById('ticket-title').value.trim(),
+                    description: document.getElementById('ticket-desc').value.trim()
+                };
+
+                if (editTicketId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'routes', 'support_tickets', editTicketId), {
+                        ...payload,
+                        updatedAt: serverTimestamp()
+                    });
+                    showToast("Ticket updated successfully.");
+                    editTicketId = null;
+                    btn.innerHTML = '<i class="fa-solid fa-rocket mr-1"></i> Submit Ticket';
+                } else {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'routes', 'support_tickets'), {
+                        ...payload,
+                        authorId: currentUser.uid,
+                        authorName: userDataCache.displayName || currentUser.displayName || 'Guest User',
+                        authorPRN: userDataCache.prn || null,
+                        authorPhoto: currentUser.photoURL || null,
+                        status: 'open',
+                        createdAt: serverTimestamp()
+                    });
+                    showToast("Ticket routed to dispatch successfully.");
+                }
+                
+                document.getElementById('ticket-form').reset();
+                
+                // Clear filters automatically on submission to let user see their post
+                if (currentFilter !== 'all') {
+                    document.querySelector('.filter-btn[data-filter="all"]').click();
+                }
+                
+                // Reset button text in UI explicitly if we were editing
+                if (btn.innerText.includes("Update")) {
+                    btn.innerHTML = '<i class="fa-solid fa-rocket mr-1"></i> Submit Ticket';
+                }
+                
+                elTicketsFeed.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) { 
+                console.error("Submission failed:", err);
+                showToast("Data write operation denied. Check payload format.", "error"); 
+            } finally { 
+                btn.disabled = false; 
+                if (editTicketId === null) {
+                    btn.innerHTML = '<i class="fa-solid fa-rocket mr-1"></i> Submit Ticket';
+                }
+            }
+        };
+
+        window.adminReply = async function(ticketId) {
+            if (!isAdminFlag) return showToast("Clearance denied.", "error");
+            const inputEl = document.getElementById(`reply-input-${ticketId}`);
+            
+            if (!inputEl.value.trim()) return showToast("Empty dispatches are strictly prohibited.", "error");
+            
+            try {
+                inputEl.disabled = true;
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'routes', 'support_tickets', ticketId), { 
+                    adminReply: inputEl.value.trim(),
+                    status: 'closed', // Automatically resolve upon reply
+                    repliedAt: serverTimestamp() 
+                });
+                showToast("Official reply broadcasted successfully."); 
+                inputEl.value = '';
+            } catch (err) { 
+                showToast("Failed to process dispatch payload.", "error"); 
+                inputEl.disabled = false; 
+            }
+        };
+
+        window.updateTicketStatus = async function(ticketId, newStatus) {
+            if (!isAdminFlag) return showToast("Clearance denied.", "error");
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'routes', 'support_tickets', ticketId), { 
+                    status: newStatus,
+                    updatedAt: serverTimestamp()
+                });
+                showToast(`Ticket status explicitly shifted to [${newStatus.toUpperCase()}].`); 
+            } catch (err) { 
+                console.error(err);
+                showToast("Status transition protocol failed.", "error"); 
+            }
+        };
+
+        window.assignTicket = async function(ticketId) {
+            if (!isAdminFlag) return showToast("Clearance denied.", "error");
+            const assigneeName = prompt("Enter the name of the assignee:");
+            if (assigneeName === null) return; // User cancelled
+            
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'routes', 'support_tickets', ticketId), {
+                    assignedTo: assigneeName.trim() || null,
+                    updatedAt: serverTimestamp()
+                });
+                if (assigneeName.trim()) {
+                    showToast(`Ticket assigned to ${assigneeName.trim()}.`);
+                } else {
+                    showToast("Ticket assignment cleared.");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to assign ticket.", "error");
+            }
+        };
+        
+        window.editTicket = function(ticketId) {
+            const ticket = allTickets.find(t => t.id === ticketId);
+            if (!ticket) return;
+            
+            editTicketId = ticketId;
+            document.getElementById('ticket-category').value = ticket.category || '';
+            document.getElementById('ticket-priority').value = ticket.priority || '';
+            document.getElementById('ticket-title').value = ticket.title || '';
+            document.getElementById('ticket-desc').value = ticket.description || '';
+            
+            document.getElementById('btn-submit-ticket').innerHTML = '<i class="fa-solid fa-pen mr-1"></i> Update Ticket';
+            
+            // Scroll to the top to see the form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        
+        window.addComment = async function(ticketId) {
+            if (!currentUser) return showToast("Unauthorized operation. Session expired.", "error");
+            const inputEl = document.getElementById(`comment-input-${ticketId}`);
+            if (!inputEl) return;
+            
+            const text = inputEl.value.trim();
+            if (!text) return showToast("Empty comments are prohibited.", "error");
+            
+            try {
+                inputEl.disabled = true;
+                const newComment = {
+                    text: text,
+                    authorId: currentUser.uid,
+                    authorName: userDataCache.displayName || currentUser.displayName || 'Guest User',
+                    createdAt: Date.now() // Use client timestamp for simple serialization in arrayUnion
+                };
+                
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'routes', 'support_tickets', ticketId), { 
+                    comments: arrayUnion(newComment),
+                    updatedAt: serverTimestamp()
+                });
+                showToast("Comment successfully broadcasted."); 
+                inputEl.value = '';
+            } catch (err) { 
+                console.error("Failed to post comment payload:", err);
+                showToast("Failed to process comment payload.", "error"); 
+            } finally {
+                inputEl.disabled = false;
+            }
+        };
+
+        window.deleteTicket = async function(ticketId) {
+            if (!currentUser) return;
+            // Native confirm for quick interaction
+            if (confirm("Proceed with permanent deletion of this record?")) {
+                try { 
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'routes', 'support_tickets', ticketId)); 
+                    showToast("Record successfully purged."); 
+                } catch (err) { 
+                    console.error("Deletion failed:", err);
+                    showToast("Insufficient clearance to delete object.", "error"); 
+                }
+            }
+        };
+    </script>
+</body>
+</html>
