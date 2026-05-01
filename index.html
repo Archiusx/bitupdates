@@ -439,4 +439,37 @@
                     title: document.getElementById('ticket-title').value.trim(),
                     description: document.getElementById('ticket-desc').value.trim(),
                     authorId: currentUser.uid,
-               
+                    authorName: userDataCache.displayName || currentUser.displayName || 'Student',
+                    authorPRN: userDataCache.prn || null,
+                    authorPhoto: currentUser.photoURL || null,
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('ticket-form').reset();
+                showToast("Ticket submitted!");
+                elTicketsFeed.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) { showToast("Failed to submit ticket.", "error"); } 
+            finally { btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Ticket'; btn.disabled = false; }
+        };
+
+        window.adminReply = async function(ticketId) {
+            if (!isAdminFlag) return;
+            const inputEl = document.getElementById(`reply-input-${ticketId}`);
+            if (!inputEl.value.trim()) return showToast("Reply cannot be empty.", "error");
+            try {
+                inputEl.disabled = true;
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'support_tickets', ticketId), { adminReply: inputEl.value.trim(), repliedAt: serverTimestamp() });
+                showToast("Official reply posted!"); inputEl.value = '';
+            } catch (err) { showToast("Failed to post reply.", "error"); inputEl.disabled = false; }
+        };
+
+        window.deleteTicket = async function(ticketId) {
+            if (!currentUser) return;
+            if (confirm("Delete this ticket?")) {
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'support_tickets', ticketId)); showToast("Ticket deleted."); } 
+                catch (err) { showToast("Failed to delete ticket.", "error"); }
+            }
+        };
+    </script>
+</body>
+</html>
+
